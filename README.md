@@ -1,8 +1,17 @@
-# ThirdTry
+# PVE 卡牌对决
 
-Project workspace for `ThirdTry`.
+一个本地浏览器运行的卡牌对战原型：玩家对战 AI，每副牌 30 张，三回合内通过进攻、防御和蓄力决胜。
 
 ## Getting started
 
-Add project setup, development, and usage instructions here as the project grows.
+直接用浏览器打开 `index.html` 即可开始游戏，不需要安装依赖。
 
+## 当前玩法
+
+- 玩家和 AI 各自组一副 30 张牌。
+- 进攻牌最多 10 张。
+- 绝对防御固定 1 张。
+- 普通防御和蓄力牌数量可自由调整。
+- 每回合 4 个对局，每个对局先布置 2 张，再翻开 1 张，最后从 2 张中选择 1 张同时打出。
+- 每回合结束后抽 10 张并弃 2 张，保证新回合开始时手牌为 10 张。
+- 生命先归零的一方失败；三个回合结束后生命值更高的一方获胜。

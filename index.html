@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PVE 卡牌对决</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <h1>PVE 卡牌对决</h1>
+          <p>30 张组牌，3 个回合，4 次对局，先和 AI 把进攻、防御和蓄力的核心循环跑起来。</p>
+        </div>
+        <div class="round-pill" id="roundStatus">准备组牌</div>
+      </header>
+
+      <section class="setup-panel" id="setupPanel">
+        <div class="setup-copy">
+          <h2>组牌设置</h2>
+          <p>每副牌固定 30 张。进攻最多 10 张，绝对防御固定 1 张，普通防御和蓄力由玩家自己分配；AI 也使用同样规则组牌。</p>
+        </div>
+        <div class="deck-builders" id="deckBuilders"></div>
+        <button class="primary-action" id="startGame">开始挑战 AI</button>
+      </section>
+
+      <section class="table" id="gameTable" hidden>
+        <article class="player-board" id="player-1"></article>
+
+        <aside class="center-console">
+          <div class="phase-card">
+            <span class="label">当前流程</span>
+            <h2 id="phaseTitle">布置阶段</h2>
+            <p id="phaseHint">双方从手牌中各选择 2 张，置入出牌区。</p>
+          </div>
+
+          <div class="actions">
+            <button id="mainAction" class="primary-action">确认布置</button>
+            <button id="restart" class="ghost-action">重新开始</button>
+          </div>
+
+          <div class="log-panel">
+            <div class="log-title">战斗日志</div>
+            <ol id="battleLog"></ol>
+          </div>
+
+          <div class="rules-card">
+            <h3>结算速记</h3>
+            <p>攻击未撞防御：造成 1 + 当前蓄力伤害，并清空蓄力。</p>
+            <p>蓄力未撞攻击：本回合蓄力 +1。蓄力 3 次后，攻击无视普通防御。</p>
+          </div>
+        </aside>
+
+        <article class="player-board" id="player-2"></article>
+      </section>
+    </main>
+
+    <template id="playerTemplate">
+      <div class="player-header">
+        <div>
+          <h2 class="player-name"></h2>
+          <p class="player-meta"></p>
+        </div>
+        <div class="hp"></div>
+      </div>
+
+      <div class="stats">
+        <span class="stat deck-count"></span>
+        <span class="stat discard-count"></span>
+        <span class="stat hand-count"></span>
+        <span class="stat charge-count"></span>
+      </div>
+
+      <div class="play-zone">
+        <button class="slot" data-slot="0"></button>
+        <button class="slot" data-slot="1"></button>
+      </div>
+
+      <div class="hand"></div>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
