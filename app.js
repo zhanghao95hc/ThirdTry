@@ -660,9 +660,14 @@ function canAct() {
 function renderCard(card, selected, index, playerIndex) {
   const type = CARD_TYPES[card.type];
   const button = document.createElement("button");
-  button.className = `card ${type.className}${selected ? " selected" : ""}`;
-  button.innerHTML = cardFaceMarkup(card);
+  button.className = `card compact-card ${type.className}${selected ? " selected" : ""}`;
+  button.innerHTML = cardFaceMarkup(card, { compact: true });
   button.addEventListener("click", () => handleCardClick(playerIndex, index));
+  if (playerIndex === HUMAN) {
+    button.addEventListener("mouseenter", (event) => showCardPreview(card, event));
+    button.addEventListener("mousemove", moveCardPreview);
+    button.addEventListener("mouseleave", hideCardPreview);
+  }
   return button;
 }
 
@@ -715,9 +720,10 @@ function renderPlayer(player, playerIndex) {
   const board = document.querySelector(`#player-${playerIndex + 1}`);
   board.innerHTML = "";
   const fragment = playerTemplate.content.cloneNode(true);
-  fragment.querySelector(".player-name").textContent = player.name;
+  const header = fragment.querySelector(".player-header");
+  fragment.querySelector(".player-name").innerHTML = `<span>${player.name}</span><span class="hp-inline">HP ${Math.max(0, player.hp)}</span>`;
   fragment.querySelector(".player-meta").textContent = `牌组：进攻 ${player.config.attack} / 普防 ${player.config.defense} / 绝防 1 / 蓄力 ${29 - player.config.attack - player.config.defense}`;
-  fragment.querySelector(".hp").textContent = `HP ${Math.max(0, player.hp)}`;
+  fragment.querySelector(".hp").remove();
   fragment.querySelector(".deck-count").textContent = `牌库 ${player.deck.length}`;
   fragment.querySelector(".discard-count").textContent = `弃牌 ${player.discard.length}`;
   fragment.querySelector(".hand-count").textContent = `手牌 ${player.hand.length}`;
@@ -732,6 +738,7 @@ function renderPlayer(player, playerIndex) {
   const hand = fragment.querySelector(".hand");
   if (player.isAi && state.phase !== "gameover") {
     renderHiddenHand(hand, player.hand.length);
+    header.appendChild(hand);
   } else {
     player.hand.forEach((card, cardIndex) => {
       const selected = state.phase === "discard" && state.discardSelection.has(cardIndex);
