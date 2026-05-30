@@ -64,6 +64,8 @@ const state = {
   players: [],
   setupSelection: new Set(),
   discardSelection: new Set(),
+  winnerMessage: "",
+  lastDuelResult: null,
   log: []
 };
 
@@ -83,6 +85,14 @@ const mainAction = document.querySelector("#mainAction");
 const restart = document.querySelector("#restart");
 const battleLog = document.querySelector("#battleLog");
 const playerTemplate = document.querySelector("#playerTemplate");
+const resultModal = document.querySelector("#resultModal");
+const resultTitle = document.querySelector("#resultTitle");
+const resultMessage = document.querySelector("#resultMessage");
+const resultRestart = document.querySelector("#resultRestart");
+const duelResult = document.querySelector("#duelResult");
+const duelResultTitle = document.querySelector("#duelResultTitle");
+const duelResultBody = document.querySelector("#duelResultBody");
+const cardPreview = document.querySelector("#cardPreview");
 
 function makeCard(type, owner, index) {
   nextCardId += 1;
@@ -220,6 +230,8 @@ function startGame() {
   state.phase = "layout";
   state.setupSelection = new Set();
   state.discardSelection = new Set();
+  state.winnerMessage = "";
+  state.lastDuelResult = null;
   state.log = ["你和 AI 洗牌，各抽 10 张，第一回合开始。"];
   state.players = [
     makePlayer("玩家", getConfig(HUMAN), HUMAN),
@@ -233,8 +245,11 @@ function startGame() {
 function restartGame() {
   setupPanel.hidden = false;
   gameTable.hidden = true;
+  resultModal.hidden = true;
   roundStatus.textContent = "准备组牌";
   state.players = [];
+  state.winnerMessage = "";
+  state.lastDuelResult = null;
   state.log = [];
   renderDeckBuilders();
 }
@@ -265,6 +280,7 @@ function beginNextRound() {
   state.round += 1;
   state.duel = 1;
   state.phase = "layout";
+  state.lastDuelResult = null;
   state.players.forEach((player) => {
     player.charge = 0;
     player.revealChoice = null;
@@ -292,12 +308,108 @@ function endByHpOrRounds() {
 
   if (!message) return false;
   state.phase = "gameover";
+  state.winnerMessage = message;
   state.log.unshift(message);
   return true;
 }
 
 function cardLabel(card) {
   return CARD_TYPES[card.type].name;
+}
+
+function cardArt(type) {
+  const art = {
+    attack: `
+      <svg class="card-art-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="attackBlade" x1="18" y1="82" x2="82" y2="18">
+            <stop offset="0" stop-color="#5e100d" />
+            <stop offset="0.45" stop-color="#f6d0a0" />
+            <stop offset="1" stop-color="#f04232" />
+          </linearGradient>
+        </defs>
+        <path class="slash slash-a" d="M16 70 C34 55 49 39 67 17" />
+        <path class="slash slash-b" d="M25 81 C43 64 62 45 84 24" />
+        <path d="M21 79 L68 24 L82 18 L76 33 L31 86 Z" fill="url(#attackBlade)" />
+        <path d="M19 82 L31 70 L39 78 L27 90 Z" fill="#5b2215" />
+        <path d="M39 65 L51 77" stroke="#ffe6b2" stroke-width="5" stroke-linecap="round" />
+      </svg>
+    `,
+    defense: `
+      <svg class="card-art-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <linearGradient id="defenseShield" x1="22" y1="16" x2="78" y2="90">
+            <stop offset="0" stop-color="#c7ecff" />
+            <stop offset="0.48" stop-color="#2e7ec2" />
+            <stop offset="1" stop-color="#0d2f5f" />
+          </linearGradient>
+        </defs>
+        <path d="M50 12 L79 25 L74 61 C70 76 59 86 50 91 C41 86 30 76 26 61 L21 25 Z" fill="url(#defenseShield)" />
+        <path d="M50 20 L68 29 L64 58 C61 69 55 76 50 80 Z" fill="rgba(255,255,255,0.26)" />
+        <path d="M25 35 H75 M31 60 H69" stroke="#eaf7ff" stroke-width="4" stroke-linecap="round" opacity=".72" />
+      </svg>
+    `,
+    absolute: `
+      <svg class="card-art-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <radialGradient id="absoluteWard" cx="50%" cy="45%" r="52%">
+            <stop offset="0" stop-color="#fff2ff" />
+            <stop offset="0.48" stop-color="#8b61f0" />
+            <stop offset="1" stop-color="#2b174f" />
+          </radialGradient>
+        </defs>
+        <path d="M50 10 L82 26 L76 64 C71 79 59 89 50 94 C41 89 29 79 24 64 L18 26 Z" fill="url(#absoluteWard)" />
+        <path d="M50 20 L70 31 L66 59 C62 70 55 78 50 82 C45 78 38 70 34 59 L30 31 Z" fill="rgba(255,255,255,.2)" />
+        <circle cx="50" cy="52" r="22" fill="none" stroke="#f6ddff" stroke-width="5" />
+        <path d="M34 52 H66 M50 36 V68" stroke="#f6ddff" stroke-width="4" stroke-linecap="round" />
+      </svg>
+    `,
+    charge: `
+      <svg class="card-art-svg" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <radialGradient id="chargeCore" cx="50%" cy="50%" r="52%">
+            <stop offset="0" stop-color="#fff7b7" />
+            <stop offset="0.5" stop-color="#f0b91f" />
+            <stop offset="1" stop-color="#7b4200" />
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="35" fill="url(#chargeCore)" />
+        <circle cx="50" cy="50" r="43" fill="none" stroke="#f6d777" stroke-width="4" stroke-dasharray="10 7" />
+        <path d="M57 12 L29 53 H48 L41 88 L72 42 H53 Z" fill="#fff2a1" stroke="#7b4200" stroke-width="3" stroke-linejoin="round" />
+      </svg>
+    `
+  };
+  return art[type] || "";
+}
+
+function cardBackLogo() {
+  return `
+    <svg class="back-logo" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="backGold" x1="15" y1="85" x2="85" y2="15">
+          <stop offset="0" stop-color="#6f4b1d" />
+          <stop offset="0.52" stop-color="#f2d48a" />
+          <stop offset="1" stop-color="#b98734" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="url(#backGold)" stroke-width="5" />
+      <circle cx="50" cy="50" r="23" fill="none" stroke="url(#backGold)" stroke-width="2.5" stroke-dasharray="8 5" />
+      <path d="M24 77 L76 25 M24 25 L76 77" stroke="url(#backGold)" stroke-width="7" stroke-linecap="round" />
+      <path d="M71 20 L82 18 L80 29 M29 82 L18 84 L20 73 M18 18 L30 20 L21 29 M82 84 L70 82 L79 73" fill="none" stroke="url(#backGold)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="50" y="55" text-anchor="middle" fill="#f6e7bd" font-size="16" font-weight="900">DUEL</text>
+    </svg>
+  `;
+}
+
+function cardFaceMarkup(card, options = {}) {
+  const type = CARD_TYPES[card.type];
+  const desc = options.compact ? "" : `<span class="card-desc">${type.desc}</span>`;
+  return `
+    <span class="card-corner">${type.mark}</span>
+    <span class="card-title">${type.name}</span>
+    ${desc}
+    <span class="card-mark">${type.mark}</span>
+  `;
 }
 
 function isDefense(card) {
@@ -346,6 +458,8 @@ function resolveDuel() {
   const entries = [
     `第 ${state.round} 回合第 ${state.duel} 对局：你打出${cardLabel(playedCards[HUMAN])}，AI 打出${cardLabel(playedCards[AI])}。`
   ];
+  const resultRound = state.round;
+  const resultDuel = state.duel;
 
   resolveAttack(HUMAN, AI, playedCards, entries);
   resolveAttack(AI, HUMAN, playedCards, entries);
@@ -359,7 +473,12 @@ function resolveDuel() {
     });
   });
 
-  state.log.unshift(entries.join(" "));
+  const resultText = entries.join(" ");
+  state.lastDuelResult = {
+    title: `第 ${resultRound} 回合 · 第 ${resultDuel} 对局`,
+    body: resultText
+  };
+  state.log.unshift(resultText);
 
   if (endByHpOrRounds()) return;
   if (state.duel < 4) {
@@ -435,15 +554,33 @@ function chooseAiDiscard() {
   });
 }
 
+function stageHumanCard(cardIndex) {
+  const human = state.players[HUMAN];
+  const emptySlot = human.staged.findIndex((card) => !card);
+  if (emptySlot === -1) return;
+  const [card] = human.hand.splice(cardIndex, 1);
+  card.revealed = false;
+  human.staged[emptySlot] = card;
+  human.revealChoice = null;
+  human.playChoice = null;
+}
+
+function returnHumanStagedCard(slotIndex) {
+  const human = state.players[HUMAN];
+  const card = human.staged[slotIndex];
+  if (!card) return;
+  card.revealed = false;
+  human.hand.push(card);
+  human.staged[slotIndex] = null;
+  human.revealChoice = null;
+  human.playChoice = null;
+}
+
 function handleCardClick(playerIndex, cardIndex) {
   if (playerIndex !== HUMAN) return;
 
   if (state.phase === "layout") {
-    if (state.setupSelection.has(cardIndex)) {
-      state.setupSelection.delete(cardIndex);
-    } else if (state.setupSelection.size < 2) {
-      state.setupSelection.add(cardIndex);
-    }
+    stageHumanCard(cardIndex);
   }
 
   if (state.phase === "discard") {
@@ -462,6 +599,10 @@ function handleSlotClick(playerIndex, slotIndex) {
   const player = state.players[playerIndex];
   if (!player.staged[slotIndex]) return;
 
+  if (state.phase === "layout") {
+    returnHumanStagedCard(slotIndex);
+  }
+
   if (state.phase === "reveal") {
     player.revealChoice = slotIndex;
   }
@@ -474,10 +615,6 @@ function handleSlotClick(playerIndex, slotIndex) {
 }
 
 function confirmLayout() {
-  const human = state.players[HUMAN];
-  const chosen = [...state.setupSelection].sort((a, b) => b - a);
-  human.staged = chosen.map((handIndex) => human.hand[handIndex]).reverse();
-  chosen.forEach((handIndex) => human.hand.splice(handIndex, 1));
   chooseAiLayout();
   state.phase = "reveal";
   state.setupSelection = new Set();
@@ -513,7 +650,7 @@ function handleMainAction() {
 }
 
 function canAct() {
-  if (state.phase === "layout") return state.setupSelection.size === 2;
+  if (state.phase === "layout") return state.players[HUMAN].staged.every(Boolean);
   if (state.phase === "reveal") return state.players[HUMAN].revealChoice !== null;
   if (state.phase === "choose") return state.players[HUMAN].playChoice !== null;
   if (state.phase === "discard") return state.discardSelection.size === 2;
@@ -524,13 +661,7 @@ function renderCard(card, selected, index, playerIndex) {
   const type = CARD_TYPES[card.type];
   const button = document.createElement("button");
   button.className = `card ${type.className}${selected ? " selected" : ""}`;
-  button.innerHTML = `
-    <span>
-      <span class="card-title">${type.name}</span>
-      <span class="card-desc">${type.desc}</span>
-    </span>
-    <span class="card-mark">${type.mark}</span>
-  `;
+  button.innerHTML = cardFaceMarkup(card);
   button.addEventListener("click", () => handleCardClick(playerIndex, index));
   return button;
 }
@@ -538,7 +669,7 @@ function renderCard(card, selected, index, playerIndex) {
 function renderHiddenHand(hand, count) {
   hand.innerHTML = `
     <div class="ai-hand">
-      <div class="ai-stack"></div>
+      <div class="ai-stack">${cardBackLogo()}</div>
       <strong>AI 手牌隐藏</strong>
       <span>${count} 张手牌</span>
     </div>
@@ -555,10 +686,10 @@ function renderSlot(slot, slotIndex, player, playerIndex) {
   } else if (slot.revealed || state.phase === "gameover") {
     const type = CARD_TYPES[slot.type];
     element.className = `slot ${type.className}`;
-    element.innerHTML = `<strong>${type.name}</strong>`;
+    element.innerHTML = cardFaceMarkup(slot, { compact: true });
   } else {
     element.className = "slot back";
-    element.textContent = "背面朝上";
+    element.innerHTML = `${cardBackLogo()}<span class="back-label">背面朝上</span>`;
   }
 
   if (playerIndex === HUMAN && player.revealChoice === slotIndex && state.phase === "reveal") {
@@ -567,8 +698,16 @@ function renderSlot(slot, slotIndex, player, playerIndex) {
   if (playerIndex === HUMAN && player.playChoice === slotIndex && state.phase === "choose") {
     element.classList.add("play-choice");
   }
+  if (playerIndex === HUMAN && state.phase === "layout" && slot) {
+    element.classList.add("returnable");
+  }
 
   element.addEventListener("click", () => handleSlotClick(playerIndex, slotIndex));
+  if (playerIndex === HUMAN && slot) {
+    element.addEventListener("mouseenter", (event) => showCardPreview(slot, event));
+    element.addEventListener("mousemove", moveCardPreview);
+    element.addEventListener("mouseleave", hideCardPreview);
+  }
   return element;
 }
 
@@ -595,10 +734,7 @@ function renderPlayer(player, playerIndex) {
     renderHiddenHand(hand, player.hand.length);
   } else {
     player.hand.forEach((card, cardIndex) => {
-      const selected =
-        state.phase === "layout"
-          ? state.setupSelection.has(cardIndex)
-          : state.phase === "discard" && state.discardSelection.has(cardIndex);
+      const selected = state.phase === "discard" && state.discardSelection.has(cardIndex);
       hand.appendChild(renderCard(card, selected, cardIndex, playerIndex));
     });
   }
@@ -615,6 +751,35 @@ function renderLog() {
   });
 }
 
+function showCardPreview(card, event) {
+  const type = CARD_TYPES[card.type];
+  cardPreview.className = `card-preview ${type.className}`;
+  cardPreview.innerHTML = cardFaceMarkup(card);
+  cardPreview.hidden = false;
+  moveCardPreview(event);
+}
+
+function moveCardPreview(event) {
+  if (cardPreview.hidden) return;
+  const offset = 18;
+  const previewWidth = 176;
+  const previewHeight = 252;
+  let left = event.clientX + offset;
+  let top = event.clientY + offset;
+  if (left + previewWidth > window.innerWidth - 8) {
+    left = event.clientX - previewWidth - offset;
+  }
+  if (top + previewHeight > window.innerHeight - 8) {
+    top = window.innerHeight - previewHeight - 8;
+  }
+  cardPreview.style.left = `${Math.max(8, left)}px`;
+  cardPreview.style.top = `${Math.max(8, top)}px`;
+}
+
+function hideCardPreview() {
+  cardPreview.hidden = true;
+}
+
 function render() {
   if (!state.players.length) return;
   const phase = PHASES[state.phase];
@@ -627,8 +792,30 @@ function render() {
 
   state.players.forEach(renderPlayer);
   renderLog();
+  renderDuelResult();
 
   document.querySelector(".phase-card").classList.toggle("game-over", state.phase === "gameover");
+  renderResultModal();
+}
+
+function renderDuelResult() {
+  const result = state.lastDuelResult;
+  duelResult.hidden = !result;
+  if (!result) return;
+  duelResultTitle.textContent = result.title;
+  duelResultBody.textContent = result.body;
+}
+
+function renderResultModal() {
+  const isGameOver = state.phase === "gameover";
+  resultModal.hidden = !isGameOver;
+  if (!isGameOver) return;
+
+  const message = state.winnerMessage || "游戏结束。";
+  const isTie = message.includes("平局");
+  const humanWon = message.includes("你") && message.includes("获胜");
+  resultTitle.textContent = isTie ? "平局" : humanWon ? "你获胜" : "AI 获胜";
+  resultMessage.textContent = message;
 }
 
 renderDeckBuilders();
@@ -636,3 +823,4 @@ deckBuilders.addEventListener("input", handleBuilderInput);
 startGameButton.addEventListener("click", startGame);
 mainAction.addEventListener("click", handleMainAction);
 restart.addEventListener("click", restartGame);
+resultRestart.addEventListener("click", restartGame);

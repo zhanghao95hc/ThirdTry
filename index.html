@@ -10,8 +10,8 @@
     <main class="app">
       <header class="topbar">
         <div>
-          <h1>PVE 卡牌对决</h1>
-          <p>30 张组牌，3 个回合，4 次对局，先和 AI 把进攻、防御和蓄力的核心循环跑起来。</p>
+          <h1>双人卡牌对决</h1>
+          <p>玩家 VS AI · 三回合四对局 · 用进攻、防御和蓄力拆招。</p>
         </div>
         <div class="round-pill" id="roundStatus">准备组牌</div>
       </header>
@@ -26,13 +26,19 @@
       </section>
 
       <section class="table" id="gameTable" hidden>
-        <article class="player-board" id="player-1"></article>
+        <article class="player-board opponent-board" id="player-2"></article>
 
         <aside class="center-console">
           <div class="phase-card">
             <span class="label">当前流程</span>
             <h2 id="phaseTitle">布置阶段</h2>
             <p id="phaseHint">双方从手牌中各选择 2 张，置入出牌区。</p>
+          </div>
+
+          <div class="duel-result" id="duelResult" hidden>
+            <span class="label">本局结算</span>
+            <strong id="duelResultTitle">等待交锋</strong>
+            <p id="duelResultBody">打出卡牌后，这里会公开本次对局的结算结果。</p>
           </div>
 
           <div class="actions">
@@ -52,9 +58,20 @@
           </div>
         </aside>
 
-        <article class="player-board" id="player-2"></article>
+        <article class="player-board human-board" id="player-1"></article>
       </section>
     </main>
+
+    <div class="result-modal" id="resultModal" hidden>
+      <div class="result-dialog">
+        <span class="label">最终结算</span>
+        <h2 id="resultTitle">你获胜</h2>
+        <p id="resultMessage">三个回合结束，你的生命值更高。</p>
+        <button class="primary-action" id="resultRestart">再来一局</button>
+      </div>
+    </div>
+
+    <div class="card-preview" id="cardPreview" hidden></div>
 
     <template id="playerTemplate">
       <div class="player-header">
