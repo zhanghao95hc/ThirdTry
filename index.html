@@ -19,7 +19,7 @@
       <section class="setup-panel" id="setupPanel">
         <div class="setup-copy">
           <h2>组牌设置</h2>
-          <p>每副牌固定 30 张。进攻最多 10 张，绝对防御固定 1 张，普通防御和蓄力由玩家自己分配；AI 也使用同样规则组牌。</p>
+          <p>每副牌固定 30 张。攻击牌合计 10 张：普通进攻 9 张、绝对进攻 1 张；绝对防御 1 张、反弹 2 张固定，普通防御和蓄力由玩家自己分配。</p>
         </div>
         <div class="deck-builders" id="deckBuilders"></div>
         <button class="primary-action" id="startGame">开始挑战 AI</button>
@@ -53,8 +53,8 @@
 
           <div class="rules-card">
             <h3>结算速记</h3>
-            <p>攻击未撞防御：造成 1 + 当前蓄力伤害，并清空蓄力。</p>
-            <p>蓄力未撞攻击：本回合蓄力 +1。新回合最多保留 1 层蓄力。</p>
+            <p>进攻命中：造成 1 + 当前蓄力伤害，并清空蓄力；绝对进攻可击穿普通防御。</p>
+            <p>反弹撞上进攻或绝对进攻：将伤害反弹给攻击方。新回合最多保留 1 层蓄力。</p>
           </div>
         </aside>
 

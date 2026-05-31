@@ -5,23 +5,35 @@ const CARD_TYPES = {
     className: "type-attack",
     desc: "未被防住时造成 1 + 蓄力伤害。"
   },
+  absoluteAttack: {
+    name: "绝对进攻",
+    mark: "破",
+    className: "type-absolute-attack",
+    desc: "击穿普通防御；3 层蓄力时还能击穿绝对防御。"
+  },
   defense: {
     name: "普通防御",
     mark: "防",
     className: "type-defense",
-    desc: "挡住普通攻击，但会被 3 层蓄力突破。"
+    desc: "挡住普通攻击；会被绝对进攻或 3 层蓄力突破。"
   },
   absolute: {
     name: "绝对防御",
     mark: "绝",
     className: "type-absolute",
-    desc: "整副牌唯一一张，可以挡住任何攻击。"
+    desc: "整副牌唯一一张；可挡攻击，但会被 3 层绝对进攻突破。"
   },
   charge: {
     name: "蓄力",
     mark: "蓄",
     className: "type-charge",
     desc: "未撞上进攻时，本回合蓄力 +1。"
+  },
+  reflect: {
+    name: "反弹",
+    mark: "反",
+    className: "type-reflect",
+    desc: "将进攻与绝对进攻的伤害反弹给攻击方。"
   }
 };
 
@@ -55,6 +67,11 @@ const PHASES = {
 
 const HUMAN = 0;
 const AI = 1;
+const ORDINARY_ATTACK_COUNT = 9;
+const ABSOLUTE_ATTACK_COUNT = 1;
+const ABSOLUTE_DEFENSE_COUNT = 1;
+const REFLECT_COUNT = 2;
+const FLEX_CARD_COUNT = 30 - ORDINARY_ATTACK_COUNT - ABSOLUTE_ATTACK_COUNT - ABSOLUTE_DEFENSE_COUNT - REFLECT_COUNT;
 let nextCardId = 0;
 
 const state = {
@@ -70,8 +87,8 @@ const state = {
 };
 
 const defaultConfigs = [
-  { attack: 8, defense: 11 },
-  { attack: 9, defense: 10 }
+  { defense: 10 },
+  { defense: 9 }
 ];
 
 const deckBuilders = document.querySelector("#deckBuilders");
@@ -107,10 +124,12 @@ function makeCard(type, owner, index) {
 function buildDeck(config, owner) {
   const cards = [];
   const counts = {
-    attack: config.attack,
+    attack: ORDINARY_ATTACK_COUNT,
+    absoluteAttack: ABSOLUTE_ATTACK_COUNT,
     defense: config.defense,
-    absolute: 1,
-    charge: 29 - config.attack - config.defense
+    absolute: ABSOLUTE_DEFENSE_COUNT,
+    reflect: REFLECT_COUNT,
+    charge: FLEX_CARD_COUNT - config.defense
   };
 
   Object.entries(counts).forEach(([type, count]) => {
@@ -158,7 +177,6 @@ function makePlayer(name, config, index, isAi = false) {
 function getConfig(index) {
   const builder = deckBuilders.querySelector(`[data-builder="${index}"]`);
   return {
-    attack: Number(builder.querySelector('[data-field="attack"]').value),
     defense: Number(builder.querySelector('[data-field="defense"]').value)
   };
 }
@@ -173,18 +191,16 @@ function renderDeckBuilders() {
     builder.innerHTML = `
       <h3>${labels[index]}</h3>
       <label class="builder-row">
-        <span>进攻</span>
-        <input data-field="attack" type="range" min="0" max="10" value="${config.attack}" />
-        <strong data-value="attack">${config.attack}</strong>
-      </label>
-      <label class="builder-row">
         <span>普通防御</span>
-        <input data-field="defense" type="range" min="0" max="${29 - config.attack}" value="${config.defense}" />
+        <input data-field="defense" type="range" min="0" max="${FLEX_CARD_COUNT}" value="${config.defense}" />
         <strong data-value="defense">${config.defense}</strong>
       </label>
       <div class="builder-total">
         <span class="tiny-pill" data-total></span>
+        <span class="tiny-pill">普通进攻 ${ORDINARY_ATTACK_COUNT}</span>
+        <span class="tiny-pill">绝对进攻 ${ABSOLUTE_ATTACK_COUNT}</span>
         <span class="tiny-pill">绝对防御 1</span>
+        <span class="tiny-pill">反弹 ${REFLECT_COUNT}</span>
         <span class="tiny-pill" data-charge></span>
       </div>
     `;
@@ -196,28 +212,15 @@ function renderDeckBuilders() {
 
 function handleBuilderInput(event) {
   if (!event.target.matches("input")) return;
-  const builder = event.target.closest(".deck-builder");
-  const attack = builder.querySelector('[data-field="attack"]');
-  const defense = builder.querySelector('[data-field="defense"]');
-
-  if (event.target === attack) {
-    defense.max = String(29 - Number(attack.value));
-    if (Number(defense.value) > Number(defense.max)) {
-      defense.value = defense.max;
-    }
-  }
-
   updateBuilders();
 }
 
 function updateBuilders() {
   deckBuilders.querySelectorAll(".deck-builder").forEach((builder) => {
-    const attack = Number(builder.querySelector('[data-field="attack"]').value);
     const defense = Number(builder.querySelector('[data-field="defense"]').value);
-    const charge = 29 - attack - defense;
-    const total = attack + defense + charge + 1;
+    const charge = FLEX_CARD_COUNT - defense;
+    const total = ORDINARY_ATTACK_COUNT + ABSOLUTE_ATTACK_COUNT + defense + charge + ABSOLUTE_DEFENSE_COUNT + REFLECT_COUNT;
 
-    builder.querySelector('[data-value="attack"]').textContent = attack;
     builder.querySelector('[data-value="defense"]').textContent = defense;
     builder.querySelector("[data-charge]").textContent = `蓄力 ${charge}`;
     builder.querySelector("[data-total]").textContent = `总数 ${total}/30`;
@@ -316,6 +319,10 @@ function endByHpOrRounds() {
 
 function cardLabel(card) {
   return CARD_TYPES[card.type].name;
+}
+
+function isAttack(card) {
+  return card?.type === "attack" || card?.type === "absoluteAttack";
 }
 
 function cardArt(type) {
@@ -417,10 +424,18 @@ function isDefense(card) {
   return card.type === "defense" || card.type === "absolute";
 }
 
-function attackBlocked(attacker, defenderCard) {
+function isReflect(card) {
+  return card?.type === "reflect";
+}
+
+function attackBlocked(attackCard, storedCharge, defenderCard) {
   if (!isDefense(defenderCard)) return false;
+  if (attackCard.type === "absoluteAttack") {
+    if (defenderCard.type === "defense") return false;
+    return storedCharge < 3;
+  }
   if (defenderCard.type === "absolute") return true;
-  return attacker.charge < 3;
+  return storedCharge < 3;
 }
 
 function resolveAttack(attackerIndex, defenderIndex, playedCards, entries) {
@@ -428,16 +443,18 @@ function resolveAttack(attackerIndex, defenderIndex, playedCards, entries) {
   const defender = state.players[defenderIndex];
   const attackCard = playedCards[attackerIndex];
   const defenseCard = playedCards[defenderIndex];
-  if (attackCard.type !== "attack") return;
+  if (!isAttack(attackCard)) return;
 
   const storedCharge = attacker.charge;
-  const blocked = attackBlocked(attacker, defenseCard);
-  if (blocked) {
-    entries.push(`${attacker.name} 的进攻被 ${defender.name} 的${cardLabel(defenseCard)}挡住。`);
+  const damage = 1 + storedCharge;
+  if (isReflect(defenseCard)) {
+    attacker.hp -= damage;
+    entries.push(`${defender.name} 的反弹触发，将 ${attacker.name} 的${cardLabel(attackCard)}伤害反弹，造成 ${damage} 点伤害。`);
+  } else if (attackBlocked(attackCard, storedCharge, defenseCard)) {
+    entries.push(`${attacker.name} 的${cardLabel(attackCard)}被 ${defender.name} 的${cardLabel(defenseCard)}挡住。`);
   } else {
-    const damage = 1 + storedCharge;
     defender.hp -= damage;
-    entries.push(`${attacker.name} 进攻命中，造成 ${damage} 点伤害。`);
+    entries.push(`${attacker.name} 的${cardLabel(attackCard)}命中，造成 ${damage} 点伤害。`);
   }
   attacker.charge = 0;
 }
@@ -445,7 +462,7 @@ function resolveAttack(attackerIndex, defenderIndex, playedCards, entries) {
 function resolveCharge(playerIndex, opponentIndex, playedCards, entries) {
   const player = state.players[playerIndex];
   if (playedCards[playerIndex].type !== "charge") return;
-  if (playedCards[opponentIndex].type === "attack") {
+  if (isAttack(playedCards[opponentIndex])) {
     entries.push(`${player.name} 蓄力撞上进攻，蓄力无效。`);
     return;
   }
@@ -492,11 +509,15 @@ function resolveDuel() {
 }
 
 function cardScoreForAi(card, player, opponent) {
-  if (card.type === "attack") {
-    return 40 + player.charge * 18 + (opponent.hp <= 1 + player.charge ? 40 : 0);
+  if (card.type === "attack" || card.type === "absoluteAttack") {
+    const pierceBonus = card.type === "absoluteAttack" ? 24 : 0;
+    return 40 + pierceBonus + player.charge * 18 + (opponent.hp <= 1 + player.charge ? 40 : 0);
   }
   if (card.type === "absolute") {
     return 34 + (player.hp <= 5 ? 24 : 0);
+  }
+  if (card.type === "reflect") {
+    return 36 + (player.hp <= 5 ? 26 : 0);
   }
   if (card.type === "defense") {
     return 28 + (player.hp <= 5 ? 18 : 0);
@@ -519,7 +540,12 @@ function chooseAiLayout() {
 
 function chooseAiReveal() {
   const ai = state.players[AI];
-  const betterSlot = ai.staged[0].type === "absolute" ? 0 : ai.staged[1].type === "absolute" ? 1 : Math.floor(Math.random() * 2);
+  const betterSlot =
+    ai.staged[0].type === "absoluteAttack" || ai.staged[0].type === "absolute"
+      ? 0
+      : ai.staged[1].type === "absoluteAttack" || ai.staged[1].type === "absolute"
+        ? 1
+        : Math.floor(Math.random() * 2);
   ai.revealChoice = betterSlot;
   ai.staged[betterSlot].revealed = true;
 }
@@ -530,10 +556,11 @@ function chooseAiPlay() {
   const humanVisible = human.staged[human.revealChoice];
   const slotScores = ai.staged.map((card, index) => {
     let score = cardScoreForAi(card, ai, human);
-    if (humanVisible?.type === "attack" && isDefense(card)) score += card.type === "absolute" ? 55 : 40;
-    if (humanVisible?.type === "charge" && card.type === "attack") score += 42;
+    if (isAttack(humanVisible) && isReflect(card)) score += 64;
+    if (isAttack(humanVisible) && isDefense(card)) score += card.type === "absolute" ? 55 : 32;
+    if (humanVisible?.type === "charge" && isAttack(card)) score += 42;
     if (humanVisible && isDefense(humanVisible) && card.type === "charge") score += 28;
-    if (card.type === "attack" && ai.charge >= 3) score += 30;
+    if (isAttack(card) && ai.charge >= 3) score += 30;
     return { index, score: score + Math.random() * 10 };
   });
   slotScores.sort((a, b) => b.score - a.score);
@@ -723,7 +750,9 @@ function renderPlayer(player, playerIndex) {
   const fragment = playerTemplate.content.cloneNode(true);
   const header = fragment.querySelector(".player-header");
   fragment.querySelector(".player-name").innerHTML = `<span>${player.name}</span><span class="hp-inline">HP ${Math.max(0, player.hp)}</span>`;
-  fragment.querySelector(".player-meta").textContent = `牌组：进攻 ${player.config.attack} / 普防 ${player.config.defense} / 绝防 1 / 蓄力 ${29 - player.config.attack - player.config.defense}`;
+  fragment.querySelector(".player-meta").textContent = `牌组：普攻 ${ORDINARY_ATTACK_COUNT} / 绝攻 ${ABSOLUTE_ATTACK_COUNT} / 普防 ${player.config.defense} / 绝防 ${ABSOLUTE_DEFENSE_COUNT} / 反弹 ${REFLECT_COUNT} / 蓄力 ${
+    FLEX_CARD_COUNT - player.config.defense
+  }`;
   fragment.querySelector(".hp").remove();
   fragment.querySelector(".deck-count").textContent = `牌库 ${player.deck.length}`;
   fragment.querySelector(".discard-count").textContent = `弃牌 ${player.discard.length}`;

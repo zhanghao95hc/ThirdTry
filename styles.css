@@ -12,13 +12,15 @@
   --card: #f2dfb5;
   --card-ink: #261b13;
   --attack: #a52e26;
+  --absolute-attack: #d76b18;
   --defense: #245f9b;
   --absolute: #6b4ec5;
   --charge: #c89422;
+  --reflect: #1a8c78;
   --success: #13733a;
   --danger: #762322;
   --shadow: 0 20px 70px rgba(0, 0, 0, 0.44);
-  --card-sheet: url("assets/cards/card-art-sheet.png");
+  --card-sheet: url("assets/cards/card-art-sheet-v2.png");
 }
 
 * {
@@ -325,7 +327,7 @@ p {
   background:
     linear-gradient(180deg, rgba(255, 245, 210, 0.16), rgba(0, 0, 0, 0.34)),
     var(--card-sheet);
-  background-size: auto, 500% 100%;
+  background-size: auto, 700% 100%;
   box-shadow:
     inset 0 0 0 2px rgba(255, 232, 160, 0.32),
     inset 0 0 0 5px rgba(8, 5, 3, 0.18),
@@ -363,7 +365,7 @@ p {
   background:
     linear-gradient(180deg, rgba(255, 245, 210, 0.04), rgba(0, 0, 0, 0.2)),
     var(--card-sheet);
-  background-size: auto, 500% 100%;
+  background-size: auto, 700% 100%;
   background-position: center, 100% 50%;
 }
 
@@ -484,6 +486,11 @@ p {
   color: #ffd6b9;
 }
 
+.type-absolute-attack .card-title,
+.type-absolute-attack.slot strong {
+  color: #ffe1a8;
+}
+
 .type-defense .card-title,
 .type-defense.slot strong {
   color: #d7efff;
@@ -499,10 +506,21 @@ p {
   color: #fff1aa;
 }
 
+.type-reflect .card-title,
+.type-reflect.slot strong {
+  color: #bdfff1;
+}
+
 .type-attack .card-mark,
 .type-attack .card-corner,
 .type-attack.slot::after {
   background: var(--attack);
+}
+
+.type-absolute-attack .card-mark,
+.type-absolute-attack .card-corner,
+.type-absolute-attack.slot::after {
+  background: var(--absolute-attack);
 }
 
 .type-defense .card-mark,
@@ -523,16 +541,28 @@ p {
   background: var(--charge);
 }
 
+.type-reflect .card-mark,
+.type-reflect .card-corner,
+.type-reflect.slot::after {
+  background: var(--reflect);
+}
+
 .card.type-attack,
 .slot.type-attack,
 .card-preview.type-attack {
   background-position: center, 0% 50%;
 }
 
+.card.type-absolute-attack,
+.slot.type-absolute-attack,
+.card-preview.type-absolute-attack {
+  background-position: center, 16.6667% 50%;
+}
+
 .card.type-defense,
 .slot.type-defense,
 .card-preview.type-defense {
-  background-position: center, 25% 50%;
+  background-position: center, 33.3333% 50%;
 }
 
 .card.type-absolute,
@@ -544,7 +574,13 @@ p {
 .card.type-charge,
 .slot.type-charge,
 .card-preview.type-charge {
-  background-position: center, 75% 50%;
+  background-position: center, 66.6667% 50%;
+}
+
+.card.type-reflect,
+.slot.type-reflect,
+.card-preview.type-reflect {
+  background-position: center, 83.3333% 50%;
 }
 
 .slot .card-title {
@@ -626,7 +662,7 @@ p {
   background:
     linear-gradient(180deg, rgba(255, 245, 210, 0.04), rgba(0, 0, 0, 0.2)),
     var(--card-sheet);
-  background-size: auto, 500% 100%;
+  background-size: auto, 700% 100%;
   background-position: center, 100% 50%;
   box-shadow:
     7px 7px 0 rgba(17, 25, 34, 0.74),
@@ -822,7 +858,7 @@ p {
   background:
     linear-gradient(180deg, rgba(255, 245, 210, 0.16), rgba(0, 0, 0, 0.34)),
     var(--card-sheet);
-  background-size: auto, 500% 100%;
+  background-size: auto, 700% 100%;
   box-shadow:
     inset 0 0 0 2px rgba(255, 249, 222, 0.34),
     inset 0 0 0 6px rgba(122, 79, 37, 0.22),
