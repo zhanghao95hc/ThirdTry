@@ -89,6 +89,7 @@ const resultModal = document.querySelector("#resultModal");
 const resultTitle = document.querySelector("#resultTitle");
 const resultMessage = document.querySelector("#resultMessage");
 const resultRestart = document.querySelector("#resultRestart");
+const resultBattleLog = document.querySelector("#resultBattleLog");
 const duelResult = document.querySelector("#duelResult");
 const duelResultTitle = document.querySelector("#duelResultTitle");
 const duelResultBody = document.querySelector("#duelResultBody");
@@ -823,6 +824,12 @@ function renderResultModal() {
   const humanWon = message.includes("你") && message.includes("获胜");
   resultTitle.textContent = isTie ? "平局" : humanWon ? "你获胜" : "AI 获胜";
   resultMessage.textContent = message;
+  resultBattleLog.innerHTML = "";
+  [...state.log].reverse().forEach((entry) => {
+    const item = document.createElement("li");
+    item.textContent = entry;
+    resultBattleLog.appendChild(item);
+  });
 }
 
 renderDeckBuilders();

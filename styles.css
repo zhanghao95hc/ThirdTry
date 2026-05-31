@@ -850,7 +850,8 @@ p {
 }
 
 .result-dialog {
-  width: min(480px, 100%);
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
   padding: 30px;
   border: 1px solid rgba(241, 212, 138, 0.68);
   border-radius: 4px;
@@ -859,6 +860,9 @@ p {
     radial-gradient(circle at 50% 0%, rgba(198, 155, 85, 0.22), transparent 16rem),
     linear-gradient(180deg, #17202b, #070b10);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  text-align: center;
 }
 
 .result-dialog h2 {
@@ -872,6 +876,34 @@ p {
   margin: 12px 0 22px;
   color: var(--muted);
   line-height: 1.65;
+}
+
+.result-log {
+  min-height: 0;
+  margin: 0 0 22px;
+  padding: 16px;
+  border: 1px solid rgba(198, 155, 85, 0.36);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.24);
+  text-align: left;
+}
+
+.result-log h3 {
+  margin: 0 0 10px;
+  color: var(--gold-2);
+  font-size: 16px;
+}
+
+.result-log ol {
+  display: grid;
+  max-height: min(360px, 42vh);
+  gap: 8px;
+  margin: 0;
+  padding: 0 6px 0 22px;
+  overflow: auto;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 @media (max-width: 1050px) {
