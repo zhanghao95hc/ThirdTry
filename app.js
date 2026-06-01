@@ -33,7 +33,7 @@ const CARD_TYPES = {
     name: "反弹",
     mark: "反",
     className: "type-reflect",
-    desc: "将进攻与绝对进攻的伤害反弹给攻击方。"
+    desc: "将进攻与绝对进攻的伤害反弹给攻击方，最多 2 点。"
   }
 };
 
@@ -286,13 +286,13 @@ function beginNextRound() {
   state.phase = "layout";
   state.lastDuelResult = null;
   state.players.forEach((player) => {
-    player.charge = Math.min(player.charge, 1);
+    player.charge = Math.max(0, player.charge - 1);
     player.revealChoice = null;
     player.playChoice = null;
     player.staged = [null, null];
   });
   state.setupSelection = new Set();
-  state.log.unshift(`第 ${state.round} 回合开始，双方最多保留 1 层蓄力。`);
+  state.log.unshift(`第 ${state.round} 回合开始，双方剩余蓄力各减少 1 层。`);
 }
 
 function endByHpOrRounds() {
@@ -428,6 +428,10 @@ function isReflect(card) {
   return card?.type === "reflect";
 }
 
+function hpText(player) {
+  return `${player.name} 当前 HP ${Math.max(0, player.hp)}`;
+}
+
 function attackBlocked(attackCard, storedCharge, defenderCard) {
   if (!isDefense(defenderCard)) return false;
   if (attackCard.type === "absoluteAttack") {
@@ -448,13 +452,14 @@ function resolveAttack(attackerIndex, defenderIndex, playedCards, entries) {
   const storedCharge = attacker.charge;
   const damage = 1 + storedCharge;
   if (isReflect(defenseCard)) {
-    attacker.hp -= damage;
-    entries.push(`${defender.name} 的反弹触发，将 ${attacker.name} 的${cardLabel(attackCard)}伤害反弹，造成 ${damage} 点伤害。`);
+    const reflectedDamage = Math.min(damage, 2);
+    attacker.hp -= reflectedDamage;
+    entries.push(`${defender.name} 的反弹触发，将 ${attacker.name} 的${cardLabel(attackCard)}伤害反弹，造成 ${reflectedDamage} 点伤害。${hpText(attacker)}。`);
   } else if (attackBlocked(attackCard, storedCharge, defenseCard)) {
     entries.push(`${attacker.name} 的${cardLabel(attackCard)}被 ${defender.name} 的${cardLabel(defenseCard)}挡住。`);
   } else {
     defender.hp -= damage;
-    entries.push(`${attacker.name} 的${cardLabel(attackCard)}命中，造成 ${damage} 点伤害。`);
+    entries.push(`${attacker.name} 的${cardLabel(attackCard)}命中，造成 ${damage} 点伤害。${hpText(defender)}。`);
   }
   attacker.charge = 0;
 }
