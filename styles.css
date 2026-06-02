@@ -306,12 +306,12 @@ p {
 .play-zone {
   grid-area: play;
   display: grid;
-  grid-template-columns: repeat(2, 116px);
+  grid-template-columns: repeat(2, 130px);
   align-content: center;
   justify-content: center;
-  gap: 22px;
-  min-height: 166px;
-  padding: 16px;
+  gap: 24px;
+  min-height: 184px;
+  padding: 18px;
   border: 1px solid rgba(198, 155, 85, 0.22);
   background:
     radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.08), transparent 20rem),
@@ -351,9 +351,9 @@ p {
 
 .slot {
   display: grid;
-  width: 116px;
-  min-height: 160px;
-  height: 160px;
+  width: 130px;
+  min-height: 184px;
+  height: 184px;
   place-items: center;
   overflow: hidden;
   font-weight: 900;
@@ -399,10 +399,10 @@ p {
 .card {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  width: 112px;
-  min-width: 112px;
-  height: 160px;
-  padding: 11px 9px 8px;
+  width: 124px;
+  min-width: 124px;
+  height: 180px;
+  padding: 12px 10px 9px;
   text-align: left;
   overflow: hidden;
 }
@@ -432,7 +432,7 @@ p {
   display: block;
   color: #fff0c6;
   font-family: Georgia, "Noto Serif SC", serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
   position: relative;
   z-index: 2;
@@ -452,14 +452,14 @@ p {
 
 .card-mark {
   align-self: flex-end;
-  width: 31px;
-  height: 31px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 248, 220, 0.36);
   border-radius: 50%;
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
   position: relative;
   z-index: 2;
@@ -467,17 +467,17 @@ p {
 
 .card-corner {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 9px;
+  right: 9px;
   z-index: 3;
   display: grid;
-  width: 23px;
-  height: 23px;
+  width: 26px;
+  height: 26px;
   place-items: center;
   border: 1px solid rgba(255, 248, 220, 0.45);
   border-radius: 50%;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
 }
 
@@ -585,9 +585,9 @@ p {
 
 .slot .card-title {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
-  font-size: 16px;
+  left: 12px;
+  bottom: 12px;
+  font-size: 18px;
 }
 
 .back-logo {
@@ -603,10 +603,10 @@ p {
 
 .slot::after {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 24px;
-  height: 24px;
+  right: 14px;
+  bottom: 14px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   content: "";
 }
@@ -621,7 +621,7 @@ p {
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  min-height: 182px;
+  min-height: 204px;
   padding: 14px 12px 8px;
   overflow-x: auto;
   overflow-y: hidden;
