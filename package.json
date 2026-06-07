@@ -1,0 +1,49 @@
+{
+  "name": "duel-card-battle",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "desktop": "npm run build && electron .",
+    "dist:win": "npm run build && set ELECTRON_BUILDER_CACHE=.\\output\\electron-builder-cache&& electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.thirdtry.cardduel",
+    "productName": "Duel Card Battle",
+    "directories": {
+      "output": "release"
+    },
+    "icon": "build/icon.ico",
+    "afterPack": "scripts/apply-exe-icon.cjs",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "build/icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "electron": "^31.7.0",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

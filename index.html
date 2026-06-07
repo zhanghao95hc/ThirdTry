@@ -23,6 +23,73 @@
         </div>
         <div class="deck-builders" id="deckBuilders"></div>
         <button class="primary-action" id="startGame">开始挑战 AI</button>
+
+        <section class="setup-rules" aria-label="游戏规则说明">
+          <div class="setup-rules-head">
+            <span class="label">规则说明</span>
+            <h2>开局前速读</h2>
+            <p>
+              双方各有 30 张牌，洗牌后各抽 10 张。每回合有 4 个对局；每个对局先暗置 2 张牌，再翻开其中 1 张作为信息，最后从这 2 张里秘密选择 1 张同时打出并结算。
+              第 1 个玩家生命值归零立刻失败；若 3 回合结束仍未分胜负，生命值更高的一方获胜。
+            </p>
+          </div>
+
+          <div class="rule-grid">
+            <article class="setup-rule-card">
+              <h3>进攻</h3>
+              <p><strong>功能：</strong>命中时造成 <b>1 + 当前蓄力层数</b> 点伤害，随后攻击方蓄力清零。</p>
+              <p><strong>结算：</strong>若没有被防御或反弹处理，就直接伤害对方。若撞上普通防御，通常被挡住；若攻击时已有 3 层蓄力，则普通防御挡不住。</p>
+              <p><strong>例子：</strong>你有 2 层蓄力打出进攻，AI 打出蓄力，你造成 3 点伤害，然后你的蓄力变为 0。</p>
+            </article>
+
+            <article class="setup-rule-card">
+              <h3>绝对进攻</h3>
+              <p><strong>功能：</strong>属于攻击牌，会计算蓄力伤害，并且天生击穿普通防御。</p>
+              <p><strong>结算：</strong>0-2 层蓄力时，只能被绝对防御或反弹处理；达到 3 层蓄力时，连绝对防御也会被击穿。</p>
+              <p><strong>例子：</strong>你 1 层蓄力打出绝对进攻，AI 打出普通防御，AI 仍受到 2 点伤害。若 AI 打出绝对防御，则本次攻击无效。</p>
+            </article>
+
+            <article class="setup-rule-card">
+              <h3>普通防御</h3>
+              <p><strong>功能：</strong>用于防住普通进攻。</p>
+              <p><strong>结算：</strong>能挡住 0-2 层蓄力的普通进攻；挡不住 3 层蓄力的普通进攻，也挡不住绝对进攻。</p>
+              <p><strong>例子：</strong>AI 0 层蓄力打出进攻，你打出普通防御，AI 的进攻无效。若 AI 有 3 层蓄力，则你仍会受到 4 点伤害。</p>
+            </article>
+
+            <article class="setup-rule-card">
+              <h3>绝对防御</h3>
+              <p><strong>功能：</strong>整副牌只有 1 张，是最高等级的防守牌。</p>
+              <p><strong>结算：</strong>能挡住普通进攻，也能挡住 0-2 层蓄力的绝对进攻；但挡不住 3 层蓄力的绝对进攻。</p>
+              <p><strong>例子：</strong>AI 打出绝对进攻且只有 2 层蓄力，你打出绝对防御，伤害为 0。若 AI 有 3 层蓄力，则绝对进攻击穿，造成 4 点伤害。</p>
+            </article>
+
+            <article class="setup-rule-card">
+              <h3>蓄力</h3>
+              <p><strong>功能：</strong>为后续攻击增加伤害，每层蓄力让攻击伤害 +1，并可能让普通进攻或绝对进攻获得击穿能力。</p>
+              <p><strong>结算：</strong>若没有撞上对方的攻击牌，蓄力成功，本回合蓄力层数 +1；若撞上进攻或绝对进攻，本次蓄力失败。</p>
+              <p><strong>特殊：</strong>新回合开始时，若上回合还有蓄力剩余，会先减少 1 层，不会直接清空。</p>
+              <p><strong>例子：</strong>你回合结束时剩 2 层蓄力，新回合开始变成 1 层；如果你打出蓄力而 AI 打出防御，你的蓄力 +1。</p>
+            </article>
+
+            <article class="setup-rule-card">
+              <h3>反弹</h3>
+              <p><strong>功能：</strong>可以把进攻或绝对进攻的伤害反弹给攻击方。</p>
+              <p><strong>结算：</strong>反弹只对攻击牌生效，最多反弹 2 点伤害；若对方不是攻击牌，反弹不会造成伤害。</p>
+              <p><strong>例子：</strong>AI 有 3 层蓄力打出进攻，原本会造成 4 点伤害；你打出反弹后，最多只反弹 2 点给 AI，你不受到这次攻击伤害。</p>
+            </article>
+          </div>
+
+          <div class="rule-flow">
+            <article>
+              <h3>同一对局的结算顺序</h3>
+              <p>双方同时打出牌后，先分别判断双方攻击是否命中、被防御、被反弹；攻击结算后，再判断双方蓄力是否成功。防御对防御、反弹对防御、蓄力对防御通常都不会造成伤害。</p>
+            </article>
+            <article>
+              <h3>关键记忆点</h3>
+              <p>3 层蓄力的普通进攻可以击穿普通防御；绝对进攻天然击穿普通防御；3 层蓄力的绝对进攻可以击穿绝对防御；反弹可以处理两种攻击，但最多只反弹 2 点。</p>
+            </article>
+          </div>
+        </section>
       </section>
 
       <section class="table" id="gameTable" hidden>
@@ -101,6 +168,6 @@
       <div class="hand"></div>
     </template>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

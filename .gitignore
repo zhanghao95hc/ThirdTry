@@ -5,8 +5,14 @@ vendor/
 # Build outputs
 dist/
 build/
+!build/
+!build/icon.ico
 out/
 target/
+output/
+release/win-unpacked/
+release/builder-debug.yml
+release/builder-effective-config.yaml
 
 # Environment files
 .env
@@ -32,4 +38,3 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-
